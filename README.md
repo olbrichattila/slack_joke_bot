@@ -41,7 +41,7 @@ run-background
 ```
 
 
-With the run-background the code will be compiled, then will start in a background
+With you run the "make run-background", the code will be compiled and will resign in the backround.
 If you would like to kill it:
 
 ```
