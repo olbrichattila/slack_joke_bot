@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mileusna/crontab"
@@ -60,7 +59,6 @@ func (j *jokerStruct) isJokeAllowed() bool {
 	currentTime := time.Now()
 	currentMinute := currentTime.Hour()*60 + currentTime.Minute()
 
-	fmt.Println(currentMinute)
 	if j.skipBefore != 0 && currentMinute < j.skipBefore {
 		return false
 	}
