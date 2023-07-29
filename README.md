@@ -3,6 +3,8 @@
 
 This slack bot will send a random joke into a slack channel according to the configured time interval
 
+Fetches the programming joke from https://v2.jokeapi.dev and publish in your slack channel
+
 ## Configuration
 
 Create .env file into your .env folder
@@ -21,8 +23,8 @@ SLACK_CHANNEL_ID=<your slack channel ID C**********>
 # */5 * * * * -every five min"
 
 CRON=*/5 * * * *
-SKIP_BEFORE=9
-SKIP_AFTER=17
+SKIP_BEFORE=9:30
+SKIP_AFTER=17:30
 ```
 
 The SKIP_BEFORE, and SKIP_AFTER fields are not mandatory, if not set then it will run 0->24.
@@ -53,4 +55,9 @@ Example:
 Your id is "./jokebot"
 kill 52358
 ```
+
+## What's coming
+
+- tests
+- multiple channels
 
