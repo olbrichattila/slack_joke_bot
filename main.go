@@ -2,59 +2,16 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/mileusna/crontab"
 )
-
-type jokerStruct struct {
-	ctab       *crontab.Crontab
-	randomJoke RandomJokeInterface
-	messanger  MessagerInterface
-	skipBefore int
-	skipAfter  int
-}
-
-var joker *jokerStruct
-
-func newJoker(
-	randomJoke RandomJokeInterface,
-	messager MessagerInterface,
-	skipBefore int,
-	skipAfter int,
-) *jokerStruct {
-	return &jokerStruct{
-		randomJoke: randomJoke,
-		messanger:  messager,
-		skipBefore: skipBefore,
-		skipAfter:  skipAfter,
-	}
-}
-
-func hourMinuteToMinutes(input string) (int, error) {
-	timeComponents := strings.Split(input, ":")
-	if len(timeComponents) != 2 {
-		return 0, fmt.Errorf("invalid input format, expected 'hour:minute'")
-	}
-
-	hour, err := strconv.Atoi(timeComponents[0])
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse hour: %v", err)
-	}
-
-	minute, err := strconv.Atoi(timeComponents[1])
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse minute: %v", err)
-	}
-
-	return hour*60 + minute, nil
-}
 
 func main() {
 	loadEnv()
@@ -77,6 +34,32 @@ func main() {
 	waitForTermSignal()
 }
 
+func hourMinuteToMinutes(input string) (int, error) {
+	timeComponents := strings.Split(input, ":")
+	if len(timeComponents) != 2 {
+		return 0, fmt.Errorf("invalid input format, expected 'hour:minute'")
+	}
+
+	hour, err := strconv.Atoi(timeComponents[0])
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse hour: %v", err)
+	}
+
+	minute, err := strconv.Atoi(timeComponents[1])
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse minute: %v", err)
+	}
+
+	return hour*60 + minute, nil
+}
+
+func minutesToString(minutes int) string {
+	hour := int(math.Floor(float64(minutes) / 60))
+	minute := minutes % 60
+
+	return fmt.Sprintf("%02d:%02d", hour, minute)
+}
+
 func initCron() error {
 	cron := os.Getenv("CRON")
 	ctab := crontab.New()
@@ -91,47 +74,6 @@ func waitForTermSignal() {
 	<-sigChan
 }
 
-func (j *jokerStruct) SendJoke() (bool, error) {
-	if j.isJokeAllowed() == false {
-		return false, nil
-	}
-	joke, err := j.NewJoke()
-	if err != nil {
-		return false, err
-	}
-
-	err = j.messanger.Send(*joke)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-func (j *jokerStruct) NewJoke() (*string, error) {
-	joke, err := j.randomJoke.RandomJoke()
-	if err != nil {
-		return nil, err
-	}
-	return &joke, nil
-}
-
-func (j *jokerStruct) isJokeAllowed() bool {
-	currentTime := time.Now()
-	currentMinute := currentTime.Hour()*60 + currentTime.Minute()
-
-	fmt.Println(currentMinute)
-	if j.skipBefore != 0 && currentMinute < j.skipBefore {
-		return false
-	}
-
-	if j.skipAfter != 0 && currentMinute > j.skipAfter {
-		return false
-	}
-
-	return true
-}
-
 func sendJoke() {
 	sent, err := joker.SendJoke()
 	if err != nil {
@@ -139,7 +81,11 @@ func sendJoke() {
 	}
 
 	if sent == false {
-		fmt.Printf("Skip sending joke, skipBefore %d, skipAfter %d\n", joker.skipBefore, joker.skipAfter)
+		fmt.Printf(
+			"Skip sending joke, skipBefore %s, skipAfter %s\n",
+			minutesToString(joker.skipBefore),
+			minutesToString(joker.skipAfter),
+		)
 	} else {
 		fmt.Println("Joke successfully delivered to the channel")
 	}
