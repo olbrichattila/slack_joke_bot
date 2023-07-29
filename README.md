@@ -33,13 +33,12 @@ You can set individually any of them, the other will be ignored. For example if 
 
 
 ## Make targets
-
 ```
 make build
 make run
-run-background
+make run-background
+make run-test
 ```
-
 
 With you run the "make run-background", the code will be compiled and will resign in the backround.
 If you would like to kill it:
@@ -58,6 +57,5 @@ kill 52358
 
 ## What's coming
 
-- tests
 - multiple channels
-
+- logging
